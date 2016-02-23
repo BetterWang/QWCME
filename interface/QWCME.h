@@ -115,6 +115,14 @@ class QWCME : public edm::EDAnalyzer {
 
 		int gNoff;
 		int gMult;
+		double	dpp_2p;
+		double	dnn_2n;
+		double	dpp   ;
+		double	dnn   ;
+		double	d_2p  ;
+		double	d_2n  ;
+		double	dp_2p ;
+		double	dn_2n ;
 
 		correlations::FromQVector *	cqpp_2p;
 		correlations::FromQVector *	cqnn_2n;
@@ -144,8 +152,8 @@ class QWCME : public edm::EDAnalyzer {
 		correlations::HarmonicVector	hp_2p;
 		correlations::HarmonicVector	hn_2n;
 
+		TTree * trV;
 
-		void Sim();
 
 		bool CaloMatch(const reco::Track&, const edm::Event&, unsigned int idx);
 		int getNoffCent(const edm::Event&, const edm::EventSetup&, int& Noff);

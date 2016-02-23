@@ -228,6 +228,18 @@ QWCME::QWCME(const edm::ParameterSet& iConfig)
 			break;
 	}
 
+	trV = fs->make<TTree>("trV", "trV");
+	trV->Branch("Noff", &gNoff, "Noff/I");
+	trV->Branch("Mult", &gMult, "Mult/I");
+
+	trV->Branch("dpp_2p", &dpp_2p, "dpp_2p/D");
+	trV->Branch("dnn_2n", &dnn_2n, "dnn_2n/D");
+	trV->Branch("dpp",    &dpp   , "dpp/D");
+	trV->Branch("dnn",    &dnn   , "dnn/D");
+	trV->Branch("d_2p",   &d_2p  , "d_2p/D");
+	trV->Branch("d_2n",   &d_2n  , "d_2n/D");
+	trV->Branch("dp_2p",  &dp_2p , "dp_2p/D");
+	trV->Branch("dn_2n",  &dn_2n , "dn_2n/D");
 }
 
 bool
@@ -328,7 +340,16 @@ QWCME::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		}
 	}
 
+	dpp_2p = cqpp_2p->calculate( 3 , hpp_2p);
+	dnn_2n = cqnn_2n->calculate( 3 , hnn_2n);
+	dpp    = cqpp   ->calculate( 2 , hpp   );
+	dnn    = cqnn   ->calculate( 2 , hnn   );
+	d_2p   = cq_2p  ->calculate( 1 , h_2p  );
+	d_2n   = cq_2n  ->calculate( 1 , h_2n  );
+	dp_2p  = cqp_2p ->calculate( 2 , hp_2p );
+	dn_2n  = cqn_2n ->calculate( 2 , hn_2n );
 
+	trV->Fill();
 
 	qpp_2p.reset();
 	qnn_2n.reset();
@@ -481,115 +502,10 @@ QWCME::analyzeData(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 		t->Mult++;
 	}
-	if ( bSim_ ) Sim();
 }
 
 
-void
-QWCME::initQ()
-{
-	hc[1] = correlations::HarmonicVector(8);
-	hc[1][0] = -1;
-	hc[1][1] =  1;
-	hc[1][2] = -1;
-	hc[1][3] =  1;
-	hc[1][4] = -1;
-	hc[1][5] =  1;
-	hc[1][6] = -1;
-	hc[1][7] =  1;
 
-	hc[2] = correlations::HarmonicVector(8);
-	hc[2][0] = -2;
-	hc[2][1] =  2;
-	hc[2][2] = -2;
-	hc[2][3] =  2;
-	hc[2][4] = -2;
-	hc[2][5] =  2;
-	hc[2][6] = -2;
-	hc[2][7] =  2;
-
-	hc[3] = correlations::HarmonicVector(8);
-	hc[3][0] = -3;
-	hc[3][1] =  3;
-	hc[3][2] = -3;
-	hc[3][3] =  3;
-	hc[3][4] = -3;
-	hc[3][5] =  3;
-	hc[3][6] = -3;
-	hc[3][7] =  3;
-
-	hc[4] = correlations::HarmonicVector(8);
-	hc[4][0] = -4;
-	hc[4][1] =  4;
-	hc[4][2] = -4;
-	hc[4][3] =  4;
-	hc[4][4] = -4;
-	hc[4][5] =  4;
-	hc[4][6] = -4;
-	hc[4][7] =  4;
-
-	hc[5] = correlations::HarmonicVector(8);
-	hc[5][0] = -5;
-	hc[5][1] =  5;
-	hc[5][2] = -5;
-	hc[5][3] =  5;
-	hc[5][4] = -5;
-	hc[5][5] =  5;
-	hc[5][6] = -5;
-	hc[5][7] =  5;
-
-	hc[6] = correlations::HarmonicVector(8);
-	hc[6][0] = -6;
-	hc[6][1] =  6;
-	hc[6][2] = -6;
-	hc[6][3] =  6;
-	hc[6][4] = -6;
-	hc[6][5] =  6;
-	hc[6][6] = -6;
-	hc[6][7] =  6;
-
-
-
-	q[1].resize(hc[1]);
-	q[2].resize(hc[2]);
-	q[3].resize(hc[3]);
-	q[4].resize(hc[4]);
-	q[5].resize(hc[5]);
-	q[6].resize(hc[6]);
-	switch ( cmode_ ) {
-		case 1:
-			cq[1] = new correlations::closed::FromQVector(q[1]);
-			cq[2] = new correlations::closed::FromQVector(q[2]);
-			cq[3] = new correlations::closed::FromQVector(q[3]);
-			cq[4] = new correlations::closed::FromQVector(q[4]);
-			cq[5] = new correlations::closed::FromQVector(q[5]);
-			cq[6] = new correlations::closed::FromQVector(q[6]);
-			break;
-		case 2:
-			cq[1] = new correlations::recurrence::FromQVector(q[1]);
-			cq[2] = new correlations::recurrence::FromQVector(q[2]);
-			cq[3] = new correlations::recurrence::FromQVector(q[3]);
-			cq[4] = new correlations::recurrence::FromQVector(q[4]);
-			cq[5] = new correlations::recurrence::FromQVector(q[5]);
-			cq[6] = new correlations::recurrence::FromQVector(q[6]);
-			break;
-		case 3:
-			cq[1] = new correlations::recursive::FromQVector(q[1]);
-			cq[2] = new correlations::recursive::FromQVector(q[2]);
-			cq[3] = new correlations::recursive::FromQVector(q[3]);
-			cq[4] = new correlations::recursive::FromQVector(q[4]);
-			cq[5] = new correlations::recursive::FromQVector(q[5]);
-			cq[6] = new correlations::recursive::FromQVector(q[6]);
-			break;
-	}
-}
-
-
-void
-QWCME::Sim()
-{
-
-}
 
 // ------------ method called once each job just before starting event loop  ------------
 	void 
