@@ -61,13 +61,10 @@ QWCME::QWCME(const edm::ParameterSet& iConfig)
 	,	vertexToken_( consumes<reco::VertexCollection>(iConfig.getUntrackedParameter<edm::InputTag>("vertexSrc_")) )
 	,	algoParameters_(iConfig.getParameter<std::vector<int> >("algoParameters"))
 	 ,	hpp_2p({1, 1, -2})
-	 ,	hnn_2n({1, 1, -2})
 	 ,	hpp({1, 1})
-	 ,	hnn({1, 1})
-	 ,	h_2p({-2})
-	 ,	h_2n({-2})
 	 ,	hp_2p({1, -2})
-	 ,	hn_2n({1, -2})
+	 ,	h_2p({-2})
+	 ,	hp({1})
 {
 	//now do what ever initialization is needed
 	minvz_ = iConfig.getUntrackedParameter<double>("minvz_", -15.);
@@ -187,46 +184,15 @@ QWCME::QWCME(const edm::ParameterSet& iConfig)
 	}
 
 	qpp_2p.resize(hpp_2p);
-	qnn_2n.resize(hnn_2n);
+	qnn_2n.resize(hpp_2p);
 	qpp.resize(hpp);
-	qnn.resize(hnn);
-	q_2p.resize(h_2p);
-	q_2n.resize(h_2n);
+	qnn.resize(hpp);
 	qp_2p.resize(hp_2p);
-	qn_2n.resize(hn_2n);
-
-	switch ( cmode_ ) {
-		case 1:
-			cqpp_2p = new correlations::closed::FromQVector( qpp_2p );
-			cqnn_2n = new correlations::closed::FromQVector( qnn_2n );
-			cqpp    = new correlations::closed::FromQVector( qpp    );
-			cqnn    = new correlations::closed::FromQVector( qnn    );
-			cq_2p   = new correlations::closed::FromQVector( q_2p   );
-			cq_2n   = new correlations::closed::FromQVector( q_2n   );
-			cqp_2p  = new correlations::closed::FromQVector( qp_2p  );
-			cqn_2n  = new correlations::closed::FromQVector( qn_2n  );
-			break;
-		case 2:
-			cqpp_2p = new correlations::recurrence::FromQVector( qpp_2p );
-			cqnn_2n = new correlations::recurrence::FromQVector( qnn_2n );
-			cqpp    = new correlations::recurrence::FromQVector( qpp    );
-			cqnn    = new correlations::recurrence::FromQVector( qnn    );
-			cq_2p   = new correlations::recurrence::FromQVector( q_2p   );
-			cq_2n   = new correlations::recurrence::FromQVector( q_2n   );
-			cqp_2p  = new correlations::recurrence::FromQVector( qp_2p  );
-			cqn_2n  = new correlations::recurrence::FromQVector( qn_2n  );
-			break;
-		case 3:
-			cqpp_2p = new correlations::recursive::FromQVector( qpp_2p );
-			cqnn_2n = new correlations::recursive::FromQVector( qnn_2n );
-			cqpp    = new correlations::recursive::FromQVector( qpp    );
-			cqnn    = new correlations::recursive::FromQVector( qnn    );
-			cq_2p   = new correlations::recursive::FromQVector( q_2p   );
-			cq_2n   = new correlations::recursive::FromQVector( q_2n   );
-			cqp_2p  = new correlations::recursive::FromQVector( qp_2p  );
-			cqn_2n  = new correlations::recursive::FromQVector( qn_2n  );
-			break;
-	}
+	qn_2n.resize(hp_2p);
+	q_2p.resize(h_2p);
+	q_2n.resize(h_2p);
+	qp.resize(hp);
+	qn.resize(hp);
 
 	trV = fs->make<TTree>("trV", "trV");
 	trV->Branch("Noff", &gNoff, "Noff/I");
@@ -240,6 +206,19 @@ QWCME::QWCME(const edm::ParameterSet& iConfig)
 	trV->Branch("d_2n",   &d_2n  , "d_2n/D");
 	trV->Branch("dp_2p",  &dp_2p , "dp_2p/D");
 	trV->Branch("dn_2n",  &dn_2n , "dn_2n/D");
+	trV->Branch("dp",     &dp_2p , "dp/D");
+	trV->Branch("dn",     &dn_2n , "dn/D");
+
+	trV->Branch("ipp_2p", &ipp_2p, "ipp_2p/D");
+	trV->Branch("inn_2n", &inn_2n, "inn_2n/D");
+	trV->Branch("ipp",    &ipp   , "ipp/D");
+	trV->Branch("inn",    &inn   , "inn/D");
+	trV->Branch("i_2p",   &i_2p  , "i_2p/D");
+	trV->Branch("i_2n",   &i_2n  , "i_2n/D");
+	trV->Branch("ip_2p",  &ip_2p , "ip_2p/D");
+	trV->Branch("in_2n",  &in_2n , "in_2n/D");
+	trV->Branch("ip",     &ip_2p , "ip/D");
+	trV->Branch("in",     &in_2n , "in/D");
 }
 
 bool
@@ -330,24 +309,111 @@ QWCME::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		if ( t->Charge[i] > 0 ) {
 			qpp_2p.fill(t->Phi[i], t->weight[i]);
 			qpp.fill(t->Phi[i], t->weight[i]);
-			q_2p.fill(t->Phi[i], t->weight[i]);
 			qp_2p.fill(t->Phi[i], t->weight[i]);
+			q_2p.fill(t->Phi[i], t->weight[i]);
+			qp.fill(t->Phi[i], t->weight[i]);
 		} else {
 			qnn_2n.fill(t->Phi[i], t->weight[i]);
 			qnn.fill(t->Phi[i], t->weight[i]);
 			q_2n.fill(t->Phi[i], t->weight[i]);
 			qn_2n.fill(t->Phi[i], t->weight[i]);
+			qn.fill(t->Phi[i], t->weight[i]);
 		}
 	}
 
-	dpp_2p = cqpp_2p->calculate( 3 , hpp_2p);
-	dnn_2n = cqnn_2n->calculate( 3 , hnn_2n);
-	dpp    = cqpp   ->calculate( 2 , hpp   );
-	dnn    = cqnn   ->calculate( 2 , hnn   );
-	d_2p   = cq_2p  ->calculate( 1 , h_2p  );
-	d_2n   = cq_2n  ->calculate( 1 , h_2n  );
-	dp_2p  = cqp_2p ->calculate( 2 , hp_2p );
-	dn_2n  = cqn_2n ->calculate( 2 , hn_2n );
+	correlations::FromQVector * cpp_2p;
+	correlations::FromQVector * cnn_2n;
+	correlations::FromQVector * cpp;
+	correlations::FromQVector * cnn;
+	correlations::FromQVector * cp_2p;
+	correlations::FromQVector * cn_2n;
+	correlations::FromQVector * c_2p;
+	correlations::FromQVector * c_2n;
+	correlations::FromQVector * cp;
+	correlations::FromQVector * cn;
+
+	switch ( cmode_ ) {
+		case 1:
+			cpp_2p = new correlations::closed::FromQVector(qpp_2p);
+			cnn_2n = new correlations::closed::FromQVector(qnn_2n);
+			cpp    = new correlations::closed::FromQVector(qpp   );
+			cnn    = new correlations::closed::FromQVector(qnn   );
+			cp_2p  = new correlations::closed::FromQVector(qp_2p );
+			cn_2n  = new correlations::closed::FromQVector(qn_2n );
+			c_2p   = new correlations::closed::FromQVector(q_2p  );
+			c_2n   = new correlations::closed::FromQVector(q_2n  );
+			cp     = new correlations::closed::FromQVector(qp    );
+			cn     = new correlations::closed::FromQVector(qn    );
+			break;
+		case 2:
+			cpp_2p = new correlations::recurrence::FromQVector(qpp_2p);
+			cnn_2n = new correlations::recurrence::FromQVector(qnn_2n);
+			cpp    = new correlations::recurrence::FromQVector(qpp   );
+			cnn    = new correlations::recurrence::FromQVector(qnn   );
+			cp_2p  = new correlations::recurrence::FromQVector(qp_2p );
+			cn_2n  = new correlations::recurrence::FromQVector(qn_2n );
+			c_2p   = new correlations::recurrence::FromQVector(q_2p  );
+			c_2n   = new correlations::recurrence::FromQVector(q_2n  );
+			cp     = new correlations::recurrence::FromQVector(qp    );
+			cn     = new correlations::recurrence::FromQVector(qn    );
+			break;
+		case 3:
+			cpp_2p = new correlations::recursive::FromQVector(qpp_2p);
+			cnn_2n = new correlations::recursive::FromQVector(qnn_2n);
+			cpp    = new correlations::recursive::FromQVector(qpp   );
+			cnn    = new correlations::recursive::FromQVector(qnn   );
+			cp_2p  = new correlations::recursive::FromQVector(qp_2p );
+			cn_2n  = new correlations::recursive::FromQVector(qn_2n );
+			c_2p   = new correlations::recursive::FromQVector(q_2p  );
+			c_2n   = new correlations::recursive::FromQVector(q_2n  );
+			cp     = new correlations::recursive::FromQVector(qp    );
+			cn     = new correlations::recursive::FromQVector(qn    );
+			break;
+	}
+
+	correlations::Result rpp_2p = cpp_2p->calculate( 3, cpp_2p);
+	correlations::Result rnn_2n = cnn_2n->calculate( 3, cnn_2n);
+	correlations::Result rpp    = cpp   ->calculate( 2, cpp   );
+	correlations::Result rnn    = cnn   ->calculate( 2, cnn   );
+	correlations::Result rp_2p  = cp_2p ->calculate( 2, cp_2p );
+	correlations::Result rn_2n  = cn_2n ->calculate( 2, cn_2n );
+	correlations::Result r_2p   = c_2p  ->calculate( 1, c_2p  );
+	correlations::Result r_2n   = c_2n  ->calculate( 1, c_2n  );
+	correlations::Result rp     = cp    ->calculate( 1, cp    );
+	correlations::Result rn     = cn    ->calculate( 1, cn    );
+
+	dpp_2p = rpp_2p.sum().real();
+	dnn_2n = rnn_2n.sum().real();
+	dpp    = rpp   .sum().real();
+	dnn    = rnn   .sum().real();
+	dp_2p  = rp_2p .sum().real();
+	dn_2n  = rn_2n .sum().real();
+	d_2p   = r_2p  .sum().real();
+	d_2n   = r_2n  .sum().real();
+	dp     = rp    .sum().real();
+	dn     = rn    .sum().real();
+
+	ipp_2p = rpp_2p.sum().imag();
+	inn_2n = rnn_2n.sum().imag();
+	ipp    = rpp   .sum().imag();
+	inn    = rnn   .sum().imag();
+	ip_2p  = rp_2p .sum().imag();
+	in_2n  = rn_2n .sum().imag();
+	i_2p   = r_2p  .sum().imag();
+	i_2n   = r_2n  .sum().imag();
+	ip     = rp    .sum().imag();
+	in     = rn    .sum().imag();
+
+	wpp_2p = rpp_2p.weight();
+	wnn_2n = rnn_2n.weight();
+	wpp    = rpp   .weight();
+	wnn    = rnn   .weight();
+	wp_2p  = rp_2p .weight();
+	wn_2n  = rn_2n .weight();
+	w_2p   = r_2p  .weight();
+	w_2n   = r_2n  .weight();
+	wp     = rp    .weight();
+	wn     = rn    .weight();
 
 	trV->Fill();
 

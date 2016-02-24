@@ -119,38 +119,52 @@ class QWCME : public edm::EDAnalyzer {
 		double	dnn_2n;
 		double	dpp   ;
 		double	dnn   ;
-		double	d_2p  ;
-		double	d_2n  ;
 		double	dp_2p ;
 		double	dn_2n ;
+		double	d_2p  ;
+		double	d_2n  ;
+		double	dp    ;
+		double	dn    ;
 
-		correlations::FromQVector *	cqpp_2p;
-		correlations::FromQVector *	cqnn_2n;
-		correlations::FromQVector *	cqpp;
-		correlations::FromQVector *	cqnn;
-		correlations::FromQVector *	cq_2p;
-		correlations::FromQVector *	cq_2n;
-		correlations::FromQVector *	cqp_2p;
-		correlations::FromQVector *	cqn_2n;
+		double ipp_2p;
+		double inn_2n;
+		double ipp;
+		double inn;
+		double ip_2p;
+		double in_2n;
+		double i_2p;
+		double i_2n;
+		double ip;
+		double in;
+
+		double wpp_2p;
+		double wnn_2n;
+		double wpp;
+		double wnn;
+		double wp_2p;
+		double wn_2n;
+		double w_2p;
+		double w_2n;
+		double wp;
+		double wn;
 
 
 		correlations::QVector		qpp_2p;
 		correlations::QVector		qnn_2n;
 		correlations::QVector		qpp;
 		correlations::QVector		qnn;
-		correlations::QVector		q_2p;
-		correlations::QVector		q_2n;
 		correlations::QVector		qp_2p;
 		correlations::QVector		qn_2n;
+		correlations::QVector		q_2p;
+		correlations::QVector		q_2n;
+		correlations::QVector		qp;
+		correlations::QVector		qn;
 
 		correlations::HarmonicVector	hpp_2p;
-		correlations::HarmonicVector	hnn_2n;
 		correlations::HarmonicVector	hpp;
-		correlations::HarmonicVector	hnn;
-		correlations::HarmonicVector	h_2p;
-		correlations::HarmonicVector	h_2n;
 		correlations::HarmonicVector	hp_2p;
-		correlations::HarmonicVector	hn_2n;
+		correlations::HarmonicVector	h_2p;
+		correlations::HarmonicVector	hp;
 
 		TTree * trV;
 
